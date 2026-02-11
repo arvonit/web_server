@@ -37,19 +37,19 @@ client_socket client_socket::connect(std::string address, int port) {
     if (int status =
             getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints, &server_info);
         status != 0) {
-        throw std::runtime_error(fmt::format("gai error: {}", gai_strerror(status)));
+        throw std::runtime_error(std::format("gai error: {}", gai_strerror(status)));
     }
 
     // Search for correct server in linked list
     for (p = server_info; p != NULL; p = p->ai_next) {
         if ((fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
-            eprintln("[warning] client socket error: {}", strerror(errno));
+            std::println(stderr, "[warning] client socket error: {}", strerror(errno));
             continue;
         }
 
         if (::connect(fd, p->ai_addr, p->ai_addrlen) < 0) {
             close(fd);
-            throw std::runtime_error(fmt::format("connect error: {}", strerror(errno)));
+            throw std::runtime_error(std::format("connect error: {}", strerror(errno)));
         }
 
         break;
@@ -74,7 +74,7 @@ client_socket client_socket::from_fd(int fd) {
 
 // TODO: Finish implementing
 // void send_all(std::string message) {
-//     println("message length: {} bytes", message.length());
+//     std::println("message length: {} bytes", message.length());
 
 //     auto len = message.length();
 //     int bytes_sent = 0;
@@ -86,19 +86,19 @@ client_socket client_socket::from_fd(int fd) {
 //         if (n < 0 && errno == EINTR) { // Continue if send() was interrupted
 //             continue;
 //         } else if (n < 0) {
-//             throw std::runtime_error(fmt::format("send error: {}", strerror(errno)));
+//             throw std::runtime_error(std::format("send error: {}", strerror(errno)));
 //         }
 //         bytes_sent += n;
 //         bytes_left -= n;
 //     }
 
-//     println("sent: {} bytes", bytes_sent);
+//     std::println("sent: {} bytes", bytes_sent);
 // }
 
 int client_socket::send(std::string message) {
     int bytes = ::send(fd, message.c_str(), message.length(), 0);
     if (bytes < 0) {
-        throw std::runtime_error(fmt::format("send error: {}", strerror(errno)));
+        throw std::runtime_error(std::format("send error: {}", strerror(errno)));
     }
     return bytes;
 }
@@ -108,9 +108,9 @@ std::pair<std::string, int> client_socket::recv(int size) {
 
     int bytes = ::recv(fd, message.data(), size, 0);
     if (bytes < 0) {
-        throw std::runtime_error(fmt::format("recv error: {}", strerror(errno)));
+        throw std::runtime_error(std::format("recv error: {}", strerror(errno)));
     }
-    // println("message size: {}", size);
+    // std::println("message size: {}", size);
 
     // Remove trailing null terminators from string
     // This reduces the size of the string from 8192 bytes to its actual content
@@ -133,7 +133,7 @@ std::pair<std::string, int> client_socket::recv(int size) {
 //         } else if (bytes < 0 && errno == EINTR) { // System call interrupt
 //             continue;
 //         } else if (bytes < 0) {
-//             throw std::runtime_error(fmt::format("recv error: {}", strerror(errno)));
+//             throw std::runtime_error(std::format("recv error: {}", strerror(errno)));
 //             break;
 //         }
 //         bytes_left -= bytes;
@@ -145,6 +145,6 @@ std::pair<std::string, int> client_socket::recv(int size) {
 client_socket::~client_socket() {
     if (is_valid_fd(fd)) {
         close(fd);
-        // println("socket (fd: {}) destroyed", fd);
+        // std::println("socket (fd: {}) destroyed", fd);
     }
 }

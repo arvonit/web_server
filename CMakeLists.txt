@@ -15,17 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # We need this for clangd to get a compile_commands.json
 
-# Fetch fmt library from GitHub
-include(FetchContent)
-FetchContent_Declare(
-    fmt
-    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG master
-)
-FetchContent_MakeAvailable(fmt)
-
 add_executable(web ${SOURCES})
-target_link_libraries(web PRIVATE fmt)
 target_compile_options(web PRIVATE
     -Wall -Wextra -Wpedantic -Werror -Wno-error=unused-parameter -Wno-error=unused-variable
     -Wno-error=unused-but-set-variable)

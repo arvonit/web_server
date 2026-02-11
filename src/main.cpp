@@ -12,7 +12,7 @@ void handle_connection(client_socket client);
  */
 int main(int argc, char* argv[]) {
     if (argc > 2) {
-        println("Usage: web [port]");
+        std::println("Usage: web [port]");
         std::exit(1);
     }
 
@@ -22,19 +22,19 @@ int main(int argc, char* argv[]) {
         try {
             port = std::stoi(argv[1]);
         } catch (std::invalid_argument& e) {
-            eprintln("Usage: web [port]");
+            std::println(stderr, "Usage: web [port]");
             std::exit(1);
         }
     }
 
     try {
         auto socket = server_socket::listen("localhost", port);
-        println("Listening on port {}...\n", port);
+        std::println("Listening on port {}...\n", port);
         while (true) {
             std::thread(handle_connection, socket.accept()).detach();
         }
     } catch (std::exception& e) {
-        eprintln("{}", e.what());
+        std::println(stderr, "{}", e.what());
     }
 }
 
@@ -47,9 +47,9 @@ void handle_connection(client_socket client) {
         auto request = http_request(message);
 
         // Log request
-        println("request length: {}", message.length());
-        println("request line: {}, {}, {}", request.method, request.target, request.version);
-        print("{}", message);
+        std::println("request length: {}", message.length());
+        std::println("request line: {}, {}, {}", request.method, request.target, request.version);
+        std::print("{}", message);
 
         // This server only supports the GET method
         if (request.method != "GET") {
@@ -63,7 +63,7 @@ void handle_connection(client_socket client) {
 
         // Try to read file, else return an error
         try {
-            auto content = read_file(fmt::format("www{}", file));
+            auto content = read_file(std::format("www{}", file));
             client.send(create_http_response("200 OK", content));
         } catch (std::invalid_argument& e) {
             // The file does not exist, so we return 404
@@ -73,6 +73,6 @@ void handle_connection(client_socket client) {
             client.send(create_http_response("500 Internal Server Error"));
         }
     } catch (std::exception& e) {
-        eprintln("{}", e.what());
+        std::println(stderr, "{}", e.what());
     }
 }

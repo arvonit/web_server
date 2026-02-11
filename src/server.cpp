@@ -39,13 +39,13 @@ server_socket server_socket::listen(std::string address, int port) {
     if (int status =
             getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints, &server_info);
         status != 0) {
-        throw std::runtime_error(fmt::format("gai error: {}", gai_strerror(status)));
+        throw std::runtime_error(std::format("gai error: {}", gai_strerror(status)));
     }
 
     // Search for the correct server info in the linked list and bind to it
     for (p = server_info; p != NULL; p = p->ai_next) {
         if ((fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
-            eprintln("[warning] server socket error: {}\n", strerror(errno));
+            std::println(stderr, "[warning] server socket error: {}\n", strerror(errno));
             continue;
         }
 
@@ -53,12 +53,12 @@ server_socket server_socket::listen(std::string address, int port) {
         if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) < 0) {
             // fprintf(stderr, "[warning] setsockopt error: %s\n", strerror(errno));
             // exit(EXIT_FAILURE);
-            throw std::runtime_error(fmt::format("setsockopt error: {}", strerror(errno)));
+            throw std::runtime_error(std::format("setsockopt error: {}", strerror(errno)));
         }
 
         if (bind(fd, p->ai_addr, p->ai_addrlen) < 0) {
             close(fd);
-            eprintln("bind error: {}, retrying...", strerror(errno));
+            std::println(stderr, "bind error: {}, retrying...", strerror(errno));
             continue;
         }
 
@@ -75,7 +75,7 @@ server_socket server_socket::listen(std::string address, int port) {
     // Listen for incoming connections
     if (::listen(fd, backlog) < 0) { // :: calls global namespace
         close(fd);
-        throw std::runtime_error(fmt::format("listen error: {}", strerror(errno)));
+        throw std::runtime_error(std::format("listen error: {}", strerror(errno)));
     }
 
     return server_socket(fd);
@@ -93,7 +93,7 @@ client_socket server_socket::accept() {
     socklen_t client_address_size = sizeof(client_address);
     int client_fd = ::accept(fd, (struct sockaddr*)&client_address, &client_address_size);
     if (client_fd < 0) {
-        throw std::runtime_error(fmt::format("accept error: {}", strerror(errno)));
+        throw std::runtime_error(std::format("accept error: {}", strerror(errno)));
     }
 
     return client_socket::from_fd(client_fd);
